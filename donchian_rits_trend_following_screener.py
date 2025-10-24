@@ -19,6 +19,22 @@ from ta.trend import ADXIndicator
 import argparse
 import os
 from datetime import datetime
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
+
+# ----------------------------
+# Helper function
+# ----------------------------
+def as_float(x):
+    """Convert any 0-D / 1-D pandas or numpy object to plain float safely."""
+    if isinstance(x, (pd.Series, pd.Index, np.ndarray, list, tuple)):
+        if len(x) == 0:
+            return np.nan
+        x = x[0] if hasattr(x, "__getitem__") else x
+    try:
+        return float(x)
+    except Exception:
+        return np.nan
 
 
 # ----------------------------
@@ -164,15 +180,15 @@ def screen_tickers(tickers, period='2y', interval='1d',
                 results.append({
                     'ticker': t,
                     'date': df.index[-1].strftime('%Y-%m-%d'),
-                    'close': float(latest['Close']),
-                    'prev_50_high': float(prev_50_high) if not np.isnan(prev_50_high) else np.nan,
-                    'stop_4d': float(stop_4d) if not np.isnan(stop_4d) else np.nan,
-                    'SMA50': float(latest['SMA50']),
-                    'SMA200': float(latest['SMA200']),
-                    'MACD_HIST': float(latest['MACD_HIST']),
-                    'AO': float(latest['AO']),
-                    'ADX_14': float(latest['ADX_14']) if not np.isnan(latest['ADX_14']) else np.nan,
-                    'ATR_14': float(atr) if not np.isnan(atr) else np.nan,
+                    'close': as_float(latest['Close']),
+                    'prev_50_high': as_float(prev_50_high) if not np.isnan(prev_50_high) else np.nan,
+                    'stop_4d': as_float(stop_4d) if not np.isnan(stop_4d) else np.nan,
+                    'SMA50': as_float(latest['SMA50']),
+                    'SMA200': as_float(latest['SMA200']),
+                    'MACD_HIST': as_float(latest['MACD_HIST']),
+                    'AO': as_float(latest['AO']),
+                    'ADX_14': as_float(latest['ADX_14']) if not np.isnan(latest['ADX_14']) else np.nan,
+                    'ATR_14': as_float(atr) if not np.isnan(atr) else np.nan,
                 })
             else:
                 print(f"{t}: ❌ Not trending. Fails on {[k for k,v in reasons.items() if not v]}")
